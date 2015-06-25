@@ -162,7 +162,7 @@ void loop() {
       }
       error();
     }
-    byte addressBit;
+    byte addressBit = 0;
     if (type == 'T') {
       while (true) {
         Serial.print(F("Bit: "));
