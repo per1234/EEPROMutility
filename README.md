@@ -14,3 +14,7 @@ EEPROMutility
 - Open the Serial Monitor(magnifying glass button in the top right of the Arduino IDE window).
 - Select **9600 baud** in the menu in the lower right of the Serial Monitor window.
 - Further help is available via the Serial Monitor interface.
+
+
+#### Contributing
+Pull requests or issue reports are welcome! Please see the [contribution rules](https://github.com/per1234/EEPROMutility/blob/master/CONTRIBUTING.md) for instructions.
