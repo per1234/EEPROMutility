@@ -6,10 +6,9 @@ EEPROMutility
 #### Instructions
 - Download the most recent version of EEPROMutility here: https://github.com/per1234/EEPROMutility/archive/master.zip
 - Extract the EEPROMutility-master folder from the downloaded zip file.
-- Rename the folder EEPROMutility.
 - Move the folder to a convenient location.
 - If you are using an Arduino IDE version prior to 1.6.2 then you will need to install the EEPROM v2.0 library from here: https://github.com/arduino/Arduino/tree/ide-1.5.x/hardware/arduino/avr/libraries/EEPROM If you are using Arduino IDE version 1.6.2 or greater then the library is already installed.
-- Open EEPROMutility.ino in the Arduino IDE.
+- Open EEPROMutility/EEPROMutility.ino in the Arduino IDE.
 - Upload the sketch to your device.
 - Open the Serial Monitor(magnifying glass button in the top right of the Arduino IDE window).
 - Select **9600 baud** in the menu in the lower right of the Serial Monitor window.
