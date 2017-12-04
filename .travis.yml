@@ -12,6 +12,11 @@ env:
 
 before_install:
   - git clone https://github.com/per1234/arduino-ci-script.git "${HOME}/scripts"
+  - cd "${HOME}/scripts"
+  # Get new tags from the remote
+  - git fetch --tags
+  # Checkout the latest tag
+  - git checkout $(git describe --tags `git rev-list --tags --max-count=1`)
   - source "${HOME}/scripts/arduino-ci-script.sh"
 
   # Uncomment the following lines to get verbose output for debugging
@@ -28,9 +33,9 @@ before_install:
 
 script:
   # build_sketch arguments: sketch name, fqbn, allow failure, IDE version/list/range
-  - build_sketch "EEPROMutility.ino" "arduino:avr:nano:cpu=atmega328" "false" "oldest" "newest"
+  - build_sketch "${TRAVIS_BUILD_DIR}/EEPROMutility.ino" "arduino:avr:nano:cpu=atmega328" "false" "oldest" "newest"
   # Test with the hourly build of the Arduino IDE to get a warning of any incompatibilities created by recent IDE changes but allow failure because failure may be caused by bugs or changes to the IDE that will be reverted.
-  - build_sketch "EEPROMutility.ino" "arduino:avr:leonardo" "true" "hourly"
+  - build_sketch "${TRAVIS_BUILD_DIR}/EEPROMutility.ino" "arduino:avr:leonardo" "true" "hourly"
 
 
 after_script:
