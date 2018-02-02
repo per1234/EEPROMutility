@@ -480,4 +480,3 @@ void printBytes(const unsigned int byteInput) {
   }
   Serial.println();
 }
-
