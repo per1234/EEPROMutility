@@ -53,14 +53,14 @@ before_install:
 
 script:
   # build_sketch arguments: sketch name, fqbn, allow failure, IDE version/list/range
-  - build_sketch "${TRAVIS_BUILD_DIR}/EEPROMutility/EEPROMutility.ino" "arduino:avr:nano:cpu=atmega328" "false" "oldest" "newest"
+  - build_sketch "${TRAVIS_BUILD_DIR}/EEPROMutility/EEPROMutility.ino" 'arduino:avr:nano:cpu=atmega328' 'false' 'oldest' 'newest'
 
 
 after_script:
   # Commit a report of the job results to the CI-reports repository
   - USER_NAME="$(echo "$TRAVIS_REPO_SLUG" | cut -d'/' -f 1)"
   - REPOSITORY_NAME="$(echo "$TRAVIS_REPO_SLUG" | cut -d'/' -f 2)"
-  - publish_report_to_repository "$REPORT_GITHUB_TOKEN" "https://github.com/${USER_NAME}/CI-reports.git" "$REPOSITORY_NAME" "build_$(printf "%05d\n" "${TRAVIS_BUILD_NUMBER}")" "false"
+  - publish_report_to_repository "$REPORT_GITHUB_TOKEN" "https://github.com/${USER_NAME}/CI-reports.git" "$REPOSITORY_NAME" "build_$(printf "%05d\n" "${TRAVIS_BUILD_NUMBER}")" 'false'
   # Print a tab separated report of all sketch verification results to the log
   - display_report
 
