@@ -1,7 +1,7 @@
 //EEPROMutility - EEPROM management via the serial monitor. Allows reading and writing of any data type and testing. http://github.com/per1234/EEPROMutility
 #define __STDC_LIMIT_MACROS  //used for the data type menu help
 #include <limits.h>  //used for the data type menu help
-#include <EEPROM.h>  //If you are using Arduino IDE version 1.0.x then you will need to install the EEPROM v2.0 library from here: https://github.com/arduino/Arduino/tree/ide-1.5.x/hardware/arduino/avr/libraries/EEPROM If you are using Arduino IDE version 1.6.2+ then the library is already installed.
+#include <EEPROM.h>  //If you are using an Arduino IDE version prior to 1.6.2 then you will need to install the EEPROM v2.0 library from here: https://github.com/arduino/Arduino/tree/ide-1.5.x/hardware/arduino/avr/libraries/EEPROM If you are using a newer version of the Arduino IDE, then the library is already installed.
 #include <SPI.h>  //for the ethernet library
 #include "IPAddress.h"  //for IPAddress data type
 
