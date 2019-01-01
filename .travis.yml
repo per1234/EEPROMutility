@@ -54,10 +54,17 @@ before_install:
 
   - install_ide '("1.6.5-r5" "1.6.9" "1.6.13" "1.8.5" "newest")'
 
+  - install_package 'esp8266:esp8266' 'http://arduino.esp8266.com/stable/package_esp8266com_index.json'
+  - install_package 'esp32:esp32' 'https://dl.espressif.com/dl/package_esp32_index.json'
+  # Required for ESP32 package
+  - pip install pyserial
+
 
 script:
   # build_sketch arguments: sketch name, fqbn, allow failure, IDE version/list/range
   - build_sketch "${TRAVIS_BUILD_DIR}/EEPROMutility/EEPROMutility.ino" 'arduino:avr:nano:cpu=atmega328' 'false' 'oldest' 'newest'
+  - build_sketch "${TRAVIS_BUILD_DIR}/EEPROMutility/EEPROMutility.ino" 'esp8266:esp8266:d1_mini:xtal=80,vt=flash,exception=enabled,eesz=4M,ip=lm2f,dbg=Disabled,lvl=None____,wipe=none,baud=921600' 'false' 'newest'
+  - build_sketch "${TRAVIS_BUILD_DIR}/EEPROMutility/EEPROMutility.ino" 'esp32:esp32:node32s:FlashFreq=80,UploadSpeed=921600' 'false' 'newest'
 
 
 after_script:

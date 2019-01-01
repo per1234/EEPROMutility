@@ -3,13 +3,19 @@
 #include <limits.h>  //used for the data type menu help
 #include <EEPROM.h>  //If you are using Arduino IDE version 1.0.x then you will need to install the EEPROM v2.0 library from here: https://github.com/arduino/Arduino/tree/ide-1.5.x/hardware/arduino/avr/libraries/EEPROM If you are using Arduino IDE version 1.6.2+ then the library is already installed.
 #include <SPI.h>  //for the ethernet library
-#include "Ethernet.h"  //for IPAddress data type
+#include "IPAddress.h"  //for IPAddress data type
 
 #define READ_MACRO value; EEPROM.get(address, value); Serial.println(value)
 #define WRITE_MACRO writeValue = Serial.parseInt(); EEPROM.put(address, writeValue)
 
 const byte timeoutDuration = 20;
 const byte progressIndicatorInterval = 30;  //every n number of EEPROM operations the progress indicator will be updated
+#if defined(ESP8266) || defined(ESP32)
+const unsigned int EEPROMsize = 200; //adjust this according to how big you want the EEPROM to be. According to https://arduino-esp8266.readthedocs.io/en/latest/libraries.html#eeprom, "can be anywhere between 4 and 4096 bytes".
+#else   //defined(ESP8266) || defined(ESP32)
+//Unlike ESP8266, ESP32 has an annoying behavior of not setting EEPROMsize according to EEPROM.begin() (it's set to 0 unless the constructor is used)
+const unsigned int EEPROMsize = EEPROM.length();
+#endif  //defined(ESP8266) || defined(ESP32)
 
 char menu;
 char type;
@@ -21,15 +27,21 @@ void setup() {
   Serial.setTimeout(timeoutDuration);  //this removes the one second lag on Serial.parseInt() calls caused by the default 1000ms timeout. If serial input is being truncated try increasing this value.
   while (!Serial) {}; //for Leonardo et al. Wait for the serial monitor to be opened before proceeding with the sketch.
   Serial.print(F("EEPROM Utility"));
+
+#if defined(ESP8266) || defined(ESP32)
+  EEPROM.begin(EEPROMsize);    // for ESP8266 and ESP32, configure the EEPROM size
+#endif  //defined(ESP8266) || defined(ESP32)
 }
 
 
 void loop() {
   Serial.print(F("\n\nTotal EEPROM size:"));
-  printBytes(E2END + 1);
+  printBytes(EEPROMsize);
   Serial.print(F("[R]ead, [W]rite, [T]est, [H]elp: "));
   while (true) {
-    while (!Serial.available()) {};
+    while (!Serial.available()) {
+      yield();
+    }
     menu = Serial.read();
     if (menu == 'r' || menu == 'R') {
       menu = 'R';
@@ -61,9 +73,11 @@ void loop() {
     unsigned int addressEnd;
     while (true) {
       Serial.print(F("Start address: "));
-      while (!Serial.available()) {};
+      while (!Serial.available()) {
+        yield();
+      };
       addressStart = Serial.parseInt();  //get incoming byte
-      if (addressStart <= E2END) {
+      if (addressStart < EEPROMsize) {
         Serial.println(addressStart);
         break;
       }
@@ -71,9 +85,11 @@ void loop() {
     }
     while (true) {
       Serial.print(F("End address: "));
-      while (!Serial.available()) {};
+      while (!Serial.available()) {
+        yield();
+      };
       addressEnd = Serial.parseInt();  // get incoming byte:
-      if (addressEnd <= E2END && addressEnd >= addressStart) {
+      if (addressEnd < EEPROMsize && addressEnd >= addressStart) {
         Serial.println(addressEnd);
         break;
       }
@@ -81,6 +97,7 @@ void loop() {
     }
     boolean terminatorReached = false;
     for (unsigned int address = addressStart; address <= addressEnd; address += typeSize) {
+      yield();
       Serial.print(F("Address "));
       Serial.print(address);
       Serial.print(F(":"));
@@ -135,7 +152,7 @@ void loop() {
         IPAddress READ_MACRO;
       }
       else if (type == 'S') {
-        for (; address <= E2END && (terminatorReached == false || address <= addressEnd); address++) {
+        for (; address < EEPROMsize && (terminatorReached == false || address <= addressEnd); address++) {
           char value;
           EEPROM.get(address, value);
           Serial.print(value);
@@ -154,10 +171,12 @@ void loop() {
     unsigned int address;
     while (true) {
       Serial.print(F("Address: "));
-      while (!Serial.available()) {};
+      while (!Serial.available()) {
+        yield();
+      };
       address = Serial.parseInt();  //get incoming byte
       Serial.println(address);
-      if (address + typeSize - 1 <= E2END ) {
+      if (address + typeSize - 1 < EEPROMsize) {
         break;
       }
       error();
@@ -166,7 +185,9 @@ void loop() {
     if (type == 'T') {
       while (true) {
         Serial.print(F("Bit: "));
-        while (!Serial.available()) {};
+        while (!Serial.available()) {
+          yield();
+        };
         addressBit = Serial.parseInt();  //get incoming byte
         if (addressBit < 8) {
           Serial.println(addressBit);
@@ -176,17 +197,29 @@ void loop() {
       }
     }
     Serial.print(F("Write value: "));
-    while (!Serial.available()) {};
+    while (!Serial.available()) {
+      yield();
+    };
     if (type == 'T') {
       const byte writeValue = Serial.parseInt();  //get incoming byte
       byte value = EEPROM.read(address);
       bitWrite(value, writeValue, addressBit);
+#if defined(ESP8266) || defined(ESP32)
+      EEPROM.write(address, value);
+      EEPROM.commit();
+#else   //defined(ESP8266) || defined(ESP32)
       EEPROM.update(address, value);
+#endif  //defined(ESP8266) || defined(ESP32)
       value = EEPROM.read(address);
       Serial.println(bitRead(value, addressBit));
     }
     else if (type == 'B') {
+#if defined(ESP8266) || defined(ESP32)
+      EEPROM.write(address, Serial.parseInt());
+      EEPROM.commit();
+#else   //defined(ESP8266) || defined(ESP32)
       EEPROM.update(address, Serial.parseInt());
+#endif  //defined(ESP8266) || defined(ESP32)
       Serial.println(EEPROM.read(address));
     }
     else if (type == 'N') {
@@ -260,22 +293,24 @@ void loop() {
 
   else if (menu == 'T') {  //test EEPROM
     Serial.print(F("WARNING! All data in EEPROM will be erased. Continue(Y/N): "));
-    while (!Serial.available()) {};
+    while (!Serial.available()) {
+      yield();
+    }
     const char confirmValue = Serial.read(); //get incoming byte
     Serial.println(confirmValue);
     if (confirmValue == 'y' || confirmValue == 'Y') {
       Serial.println(F("Test in progress, this may take a minute"));
       const byte progressBarIndentLength = 17;
       const byte progressBarBracketLength = 3;
-      const byte progressBarLength = (E2END + 1) / progressIndicatorInterval;
+      const byte progressBarLength = (EEPROMsize) / progressIndicatorInterval;
       const byte progressStringLength = 8;
-      for (unsigned int counter = 1; counter <= progressBarIndentLength + progressBarLength; counter++) { //center title on the progress scale bar
+      for (unsigned int counter = 1; counter <= (unsigned int)(progressBarIndentLength + progressBarLength); counter++) { //center title on the progress scale bar
         Serial.write(32);
         if (counter == progressBarIndentLength - progressBarBracketLength) {
           Serial.print (F("0%["));
           counter += progressBarBracketLength;
         }
-        if (counter == progressBarIndentLength + (progressBarLength - progressStringLength) / 2) {
+        if (counter == (unsigned int)(progressBarIndentLength + (progressBarLength - progressStringLength) / 2)) {
           Serial.print(F("Progress"));
           counter += progressStringLength;
         }
@@ -283,20 +318,39 @@ void loop() {
       Serial.println(F("]100%"));
       Serial.print(F("Clearing EEPROM: "));
       unsigned int previousAddress = 0;
-      for (unsigned int address = 0; address <= E2END; address++) {  //set all addresses to 0
+      for (unsigned int address = 0; address < EEPROMsize; address++) {  //set all addresses to 0
+        yield();
+#if defined(ESP8266) || defined(ESP32)
+        EEPROM.write(address, 0);
+#else   //defined(ESP8266) || defined(ESP32)
         EEPROM.update(address, 0);
+#endif  //defined(ESP8266) || defined(ESP32)
         progressIndicator(address, previousAddress);
       }
+#if defined(ESP8266) || defined(ESP32)
+      EEPROM.commit();
+#endif  //defined(ESP8266) || defined(ESP32)
+
       Serial.print(F("\nWriting EEPROM:  "));
       previousAddress = 0;
-      for (unsigned int address = 0; address <= E2END; address++) {  //set all addresses to 255
+      for (unsigned int address = 0; address < EEPROMsize; address++) {  //set all addresses to 255
+        yield();
+#if defined(ESP8266) || defined(ESP32)
+        EEPROM.write(address, 255);
+#else   //defined(ESP8266) || defined(ESP32)
         EEPROM.update(address, 255);
+#endif  //defined(ESP8266) || defined(ESP32)
         progressIndicator(address, previousAddress);
       }
+#if defined(ESP8266) || defined(ESP32)
+      EEPROM.commit();
+#endif  //defined(ESP8266) || defined(ESP32)
+
       Serial.print(F("\nChecking EEPROM: "));
       previousAddress = 0;
       boolean success = true;
-      for (unsigned int address = 0; address <= E2END; address++) {  //verify that all addresses == 255
+      for (unsigned int address = 0; address < EEPROMsize; address++) {  //verify that all addresses == 255
+        yield();
         progressIndicator(address, previousAddress);
         if (EEPROM.read(address) != 255) {
           Serial.print(F("\nTest failed, address: "));
@@ -319,7 +373,9 @@ void dataTypeMenu() {
   Serial.print(F("bi[T], [B]yte, i[N]t8_t, [C]har, [I]nt, [U]nsigned int, [L]ong, unsi[G]ned long, [F]loat, I[P]Address, [S]tring, [H]elp: "));
 #endif
   while (true) {
-    while (!Serial.available()) {};
+    while (!Serial.available()) {
+      yield();
+    }
     type = Serial.read();
     if (type == 't' || type == 'T') {
       type = 'T';
