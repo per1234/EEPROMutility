@@ -95,7 +95,7 @@ void loop() {
       }
       error();
     }
-    boolean terminatorReached = false;
+    bool terminatorReached = false;
     for (unsigned int address = addressStart; address <= addressEnd; address += typeSize) {
       yield();
       Serial.print(F("Address "));
@@ -348,7 +348,7 @@ void loop() {
 
       Serial.print(F("\nChecking EEPROM: "));
       previousAddress = 0;
-      boolean success = true;
+      bool success = true;
       for (unsigned int address = 0; address < EEPROMsize; address++) {  //verify that all addresses == 255
         yield();
         progressIndicator(address, previousAddress);
