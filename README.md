@@ -17,4 +17,4 @@ EEPROMutility
 
 
 #### Contributing
-Pull requests or issue reports are welcome! Please see the [contribution rules](CONTRIBUTING.md) for instructions.
+Pull requests or issue reports are welcome! Please see the [contribution rules](.github/CONTRIBUTING.md) for instructions.
