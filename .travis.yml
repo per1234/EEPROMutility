@@ -35,7 +35,7 @@ before_install:
   - pip install codespell
   - codespell --skip="${TRAVIS_BUILD_DIR}/.git" --ignore-words="${TRAVIS_BUILD_DIR}/etc/codespell-ignore-words-list.txt" "${TRAVIS_BUILD_DIR}"
 
-  - git clone https://github.com/per1234/arduino-ci-script.git "${HOME}/scripts/arduino-ci-script"
+  - git clone --depth 1 https://github.com/per1234/arduino-ci-script.git "${HOME}/scripts/arduino-ci-script"
   - cd "${HOME}/scripts/arduino-ci-script"
   # Get new tags from the remote
   - git fetch --tags
