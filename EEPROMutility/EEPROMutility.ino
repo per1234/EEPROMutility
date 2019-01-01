@@ -17,9 +17,9 @@ const unsigned int EEPROMsize = 200; //adjust this according to how big you want
 const unsigned int EEPROMsize = EEPROM.length();
 #endif  //defined(ESP8266) || defined(ESP32)
 
-char menu;
-char type;
-byte typeSize;
+static char menu;
+static char type;
+static byte typeSize;
 
 
 void setup() {
@@ -366,7 +366,7 @@ void loop() {
 }
 
 
-void dataTypeMenu() {
+static void dataTypeMenu() {
 #if defined(ARDUINO_ARCH_SAM)
   Serial.print(F("bi[T], [B]yte, i[N]t8_t, [C]har, [I]nt16_t, [U]int16_t, [L]ong, unsi[G]ned long, [F]loat, [D]ouble, I[P]Address, [S]tring, [H]elp: "));
 #else
@@ -507,7 +507,7 @@ void dataTypeMenu() {
 }
 
 
-void progressIndicator(const unsigned int address, unsigned int &previousAddress) {
+static void progressIndicator(const unsigned int address, unsigned int &previousAddress) {
   if (address - previousAddress >= progressIndicatorInterval) {
     previousAddress = address;
     Serial.write(-99);
@@ -515,18 +515,18 @@ void progressIndicator(const unsigned int address, unsigned int &previousAddress
 }
 
 
-void error() {
+static void error() {
   Serial.println(F("Error: invalid address"));
 }
 
 
-void printCommaBytes(const unsigned int byteInput) {
+static void printCommaBytes(const unsigned int byteInput) {
   Serial.print(F(","));
   printBytes(byteInput);
 }
 
 
-void printBytes(const unsigned int byteInput) {
+static void printBytes(const unsigned int byteInput) {
   Serial.print(' ');
   Serial.print(byteInput);
   Serial.print(F(" byte"));
